@@ -16,15 +16,28 @@ public class CharacterMainHeroM {
 
     private Animation cheroAnimation;
 
+    private Animation cheroAnimationBackup;
+    private Animation cheroAnimationAttack;
+    private long startTime;
+    int score = 0;
 
     public CharacterMainHeroM(int x, int y){
         position = new Vector3(x, y, 0);
         velocity = new Vector3(0, 0, 0);
         Texture textureAnimation = new Texture("cosiekanim.png");
         cheroAnimation = new Animation(new TextureRegion(textureAnimation), 4, 0.8f);
+        Texture textureAnimationAttack = new Texture("cosiekanimattack.png");
+        cheroAnimationAttack = new Animation(new TextureRegion(textureAnimationAttack), 4, 0.4f);
+        cheroAnimationBackup=cheroAnimation;
     }
 
     public void update(float dt){
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        if(elapsedTime>500)
+        {
+            cheroAnimation=cheroAnimationBackup;
+            elapsedTime=0;
+        }
         cheroAnimation.update(dt);
         velocity.add(0, GRAVITY, 0);
         velocity.scl(dt);
@@ -47,5 +60,21 @@ public class CharacterMainHeroM {
         if (position.y==0) {
             velocity.y=480;
         }
+    }
+
+    public int attack(Zombie[] zombies){
+        startTime = System.currentTimeMillis();
+
+        for(int i=0;i<3;i++) {
+            if (zombies[i].getPosZombie().x>position.x && zombies[i].getPosZombie().x<position.x+100 ) {
+                float q = zombies[2].getPosZombie().x;
+                zombies[i].killed(q);
+                cheroAnimation=cheroAnimationAttack;
+                score++;
+            }
+        }
+        int punkty = score;
+        score=0;
+        return punkty;
     }
 }

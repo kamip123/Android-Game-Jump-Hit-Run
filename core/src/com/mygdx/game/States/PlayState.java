@@ -2,6 +2,7 @@ package com.mygdx.game.States;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.sprites.CharacterMainHeroM;
@@ -22,11 +23,21 @@ public class PlayState extends State{
     private Zombie tempz;
     private float q;
 
+    private SpriteBatch batch;
+    BitmapFont yourBitmapFontName;
+    private int score;
+    private String yourScoreName;
+
+
     public PlayState(GameStateManager gsm) {
         super(gsm);
         cosiek = new CharacterMainHeroM(50,100);
         cam.setToOrtho(false, MyGdxGame.WIDTH / 2, MyGdxGame.HEIGHT / 2);
         bg = new Texture("bg.png");
+
+        score = 0;
+        yourScoreName = "score: 0";
+        yourBitmapFontName = new BitmapFont();
 
         obstacles = new Obstacle[4];
         obstacles[0] = (new Obstacle(1));
@@ -38,12 +49,23 @@ public class PlayState extends State{
         zombies[0] = (new Zombie(1));
         zombies[1] = (new Zombie(2));
         zombies[2] = (new Zombie(3));
+
+        batch = new SpriteBatch();
     }
 
     @Override
     protected void handleInput() {
         if(Gdx.input.justTouched()){
-            cosiek.jump();
+            if (Gdx.input.getX() < Gdx.graphics.getWidth() / 2){
+                cosiek.jump();
+            }
+            else {
+                int temp = score;
+                score += cosiek.attack(zombies);
+                if(temp!=score){
+                    yourScoreName = "score: " + score;
+                }
+            }
         }
     }
 
@@ -79,6 +101,12 @@ public class PlayState extends State{
             if( obstacles[i].collision(cosiek.getPosition())){
                 gsm.set(new PlayState(gsm));
             }
+
+            if(obstacles[i].getPosObstacle().x+65<cosiek.getPosition().x && obstacles[i].getStatusObstacle()){
+                score++;
+                yourScoreName = "score: " + score;
+                obstacles[i].changeStatus();
+            }
         }
 
         cam.update();
@@ -97,6 +125,13 @@ public class PlayState extends State{
             sb.draw(zombies[i].getZombie(), zombies[i].getPosZombie().x, zombies[i].getPosZombie().y);
         }
         sb.end();
+        batch.begin();
+        yourBitmapFontName.setColor(1.0f, 1.0f, 1.0f, 1.0f);
+        yourBitmapFontName.getData().setScale(6);
+        yourBitmapFontName.draw(batch, yourScoreName, Gdx.graphics.getWidth()+50-Gdx.graphics.getWidth(), Gdx.graphics.getHeight()-50 );
+        batch.end();
+
+
     }
 
     @Override
